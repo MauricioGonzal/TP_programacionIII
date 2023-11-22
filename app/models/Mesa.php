@@ -47,6 +47,32 @@ class Mesa {
         return $mesas;
 	}
 
+	public static function modificar($mesa){
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("UPDATE mesa SET codigo=:codigo, estado=:estado where id = :id");
+        $query->bindValue(':codigo', $mesa->codigo);
+        $query->bindValue(':estado', $mesa->estado);
+        $query->bindValue(':id', $mesa->id);
+        $query->execute();
+
+        return true;
+	}
+
+	public static function borrar($id){
+		if(Usuario::getById($id)!=false){
+			$objDataAccess = AccesoDatos::obtenerInstancia();
+	        $query = $objDataAccess->prepararConsulta("DELETE FROM mesa where id = :id");
+	        $query->bindValue(':id', $id);
+	        $query->execute();
+
+	        return true;
+		}
+		else{
+			return false;
+		}
+		
+	}
+
 
 
 

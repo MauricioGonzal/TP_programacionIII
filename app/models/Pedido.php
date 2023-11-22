@@ -1,16 +1,17 @@
 <?php 
+
+require_once './models/Producto.php';
+
 class Pedido{
 
-	function __construct($mesa, $numero, $importe_total, $usuario)
+	function __construct($producto, $cantidad)
 	{
-		$this->mesa = $mesa;
-		$this->numero = $numero;
-		$this->importe_total = $importe_total;
-		$this->usuario = $usuario;
+		$this->producto = $producto;
+		$this->cantidad = $cantidad;
 	}
 
-	public static function crearUno($mesa, $numero, $importe_total, $usuario){
-		$pedido = new Pedido($mesa, $numero, $importe_total, $usuario);
+	public static function crearUno($producto, $cantidad){
+		$pedido = new Pedido($producto, $cantidad);
 		return $pedido;
 	}
 
@@ -23,16 +24,23 @@ class Pedido{
 	}
 
 	public static function insertarUno($pedido){
-		$objDataAccess = AccesoDatos::obtenerInstancia();
-        $query = $objDataAccess->prepararConsulta("INSERT INTO pedidos (mesa, numero, importe_total,usuario) 
-        VALUES (:mesa, :numero, :importe_total, :usuario)");
-        $query->bindValue(':mesa', $pedido->mesa);
-        $query->bindValue(':numero', $pedido->numero);
-        $query->bindValue(':importe_total', $pedido->importe_total);
-        $query->bindValue(':usuario', $pedido->usuario);
-        $query->execute();
 
-        return $objDataAccess->obtenerUltimoId();
+		$stockRestante =  Producto::hayStock($pedido->producto, $pedido->cantidad);
+		if($stockRestante!==false){
+			$producto = Producto::getById($pedido->producto);
+			$producto->stock = $stockRestante;
+			Producto::modificar($producto);
+
+			$objDataAccess = AccesoDatos::obtenerInstancia();
+	        $query = $objDataAccess->prepararConsulta("INSERT INTO pedidos (producto, cantidad) 
+	        VALUES (:producto, :cantidad)");
+	        $query->bindValue(':producto', $pedido->producto);
+	        $query->bindValue(':cantidad', $pedido->cantidad);
+	        $query->execute();
+	        return $objDataAccess->obtenerUltimoId();
+		}
+		else return -1;
+        
 	}
 
 	public static function getAll(){
@@ -46,10 +54,23 @@ class Pedido{
         return $pedidos;
 	}
 
+	public static function modificar($pedido){
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("UPDATE pedidos SET producto=:producto, cantidad=:cantidad where id = :id");
+        $query->bindValue(':producto', $pedido->producto);
+        $query->bindValue(':cantidad', $pedido->cantidad);
+        $query->bindValue(':id', $pedido->id);
+        $query->execute();
 
+        return true;
+	}
 
 }
 
+//guardar clave de usuario con hash
+//password_verify('1234', $hash)
+
+//pedido puede tener mas de un producto, cada producto su propio estado(pedido), cada producto debiera tener su tiempo de preparacion
 
 
 ?>

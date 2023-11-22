@@ -67,6 +67,21 @@ class Encargo{
         return $encargos;
 	}
 
+	public static function modificar($encargo){
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("UPDATE encargos SET pedido=:pedido, producto=:producto, cantidad=:cantidad, usuario=:usuario, estado=:estado,tiempo_estipulado=:tiempo_estipulado where id = :id");
+        $query->bindValue(':pedido', $encargo->pedido);
+        $query->bindValue(':producto', $encargo->producto);
+        $query->bindValue(':cantidad', $encargo->cantidad);
+        $query->bindValue(':usuario', $encargo->usuario);
+        $query->bindValue(':estado', $encargo->estado);
+        $query->bindValue(':tiempo_estipulado', $encargo->tiempo_estipulado);
+        $query->bindValue(':id', $encargo->id);
+        $query->execute();
+
+        return true;
+	}
+
 
 
 }

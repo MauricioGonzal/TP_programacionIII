@@ -48,6 +48,42 @@ class Mesa_controller{
       	->withHeader('Content-Type', 'application/json');
 	}
 
+	public function modificarUno($request, $response, $args){
+		$params = json_decode(file_get_contents('php://input'), true);
+		$mesa = Mesa::getById($params['id']);
+		if($mesa!=false){
+			$mesa->codigo = $params['codigo'];
+			$mesa->estado = $params['estado'];
+
+		    if (Mesa::modificar($mesa) != false) {
+		      $payload = json_encode(array("mensaje" => "Mesa modificada con éxito"));
+		    } else {
+		      $payload = json_encode(array("mensaje" => "Error al modificar la mesa"));
+		    }
+		}
+		else{
+		      $payload = json_encode(array("mensaje" => "No existe mesa con el id ingresado"));
+		}
+
+		 $response->getBody()->write($payload);
+    	return $response
+      	->withHeader('Content-Type', 'application/json');
+	}
+
+	public function borrarUno($request, $response, $args){
+		$params = json_decode(file_get_contents('php://input'), true);
+
+	    if (Mesa::borrar($params['id']) != false) {
+	      $payload = json_encode(array("mensaje" => "Mesa eliminada con éxito"));
+	    } else {
+	      $payload = json_encode(array("mensaje" => "Error al borrar la mesa"));
+	    }
+
+		 $response->getBody()->write($payload);
+    	return $response
+      	->withHeader('Content-Type', 'application/json');
+	}
+
 
 
 }

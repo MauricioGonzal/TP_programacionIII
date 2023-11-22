@@ -6,39 +6,28 @@ class Pedido_controller{
 
 	public function cargarUno($request, $response, $args){
 		$params = $request->getParsedBody();
-		$pedido = Pedido::crearUno($params['mesa'],$params['numero'], 0, $params['usuario']);
+		$pedido = Pedido::crearUno($params['producto'],$params['cantidad']);
 		$id_pedido = Pedido::insertarUno($pedido);
 		if ($id_pedido > 0) {
-			$encargos = json_decode($params['encargos']);
-			foreach($encargos as $producto => $cantidad){
-				$encargo = Encargo::crearUno($id_pedido, $producto, $cantidad, 0, 0);
-				if(!(Encargo::insertarUno($encargo) > 0)){
-			      $payload = json_encode(array("mensaje" => "Error al crear el pedido"));
-	      		$response->getBody()->write($payload);
-				return $response
-      			->withHeader('Content-Type', 'application/json');
-				}
-			}
 			$payload = json_encode(array("mensaje" => "Pedido creado exitosamente"));
-	    } else {
+	    } else if($id_pedido == -1){
+	      $payload = json_encode(array("mensaje" => "No hay stock suficiente del producto"));
+    	}
+    	else{
 	      $payload = json_encode(array("mensaje" => "Error al crear el pedido"));
     	}
 
-		 $response->getBody()->write($payload);
+	 	$response->getBody()->write($payload);
     	return $response
       	->withHeader('Content-Type', 'application/json');
 	}
 
 	public function traerUno($request, $response, $args){
 		$id = $args['id'];
-		$producto = Producto::getById($id);
+		$pedido = Pedido::getById($id);
 
-		if($producto != null){
-			$payload = json_encode($producto);
-		}
-		else{
-			$payload = json_encode(array('mensaje'=>'No existe el producto'));
-		}
+		if($pedido != null) $payload = json_encode($pedido);
+		else $payload = json_encode(array('mensaje'=>'No existe el pedido'));
 
 		$response->getBody()->write($payload);
     	return $response
@@ -46,13 +35,13 @@ class Pedido_controller{
 	}
 
 	public function traerTodos($request, $response, $args){
-		$productos = Producto::getAll();
+		$pedidos = Pedido::getAll();
 
-		if(count($productos)>0){
-			$payload = json_encode($productos);
+		if(count($pedidos)>0){
+			$payload = json_encode($pedidos);
 		}
 		else{
-			$payload = json_encode(array('mensaje'=>'No hay productos cargados'));
+			$payload = json_encode(array('mensaje'=>'No hay pedidos cargados'));
 		}
 
 		$response->getBody()->write($payload);
@@ -60,10 +49,23 @@ class Pedido_controller{
       	->withHeader('Content-Type', 'application/json');
 	}
 
+	public function modificarUno($request, $response, $args){
+		$params = json_decode(file_get_contents('php://input'), true);
+		$pedido = Producto::getById($params['id']);
 
+		if($pedido!=false){
+			$pedido->producto = $params['producto'];
+			$pedido->cantidad = $params['cantidad'];
+
+		    if (Pedido::modificar($pedido) != false) $payload = json_encode(array("mensaje" => "Pedido modificado con éxito"));
+		    else $payload = json_encode(array("mensaje" => "Error al modificar el pedido"));
+		}
+		else $payload = json_encode(array("mensaje" => "No existe pedido con el id ingresado"));
+
+		$response->getBody()->write($payload);
+    	return $response
+      	->withHeader('Content-Type', 'application/json');
+	}
 
 }
-
-
-
 ?>

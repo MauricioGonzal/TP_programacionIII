@@ -18,6 +18,45 @@ class Usuario_controller{
       	->withHeader('Content-Type', 'application/json');
 	}
 
+	public function modificarUno($request, $response, $args){
+		$params = json_decode(file_get_contents('php://input'), true);
+		$usuario = Usuario::getById($params['id']);
+		if($usuario!=false){
+			$usuario->nombre = $params['nombre'];
+			$usuario->estado = $params['estado'];
+			$usuario->sector = $params['sector'];
+			$usuario->password = $params['password'];
+
+		    if (Usuario::modificar($usuario) != false) {
+		      $payload = json_encode(array("mensaje" => "Usuario modificado con éxito"));
+		    } else {
+		      $payload = json_encode(array("mensaje" => "Error al modificar el usuario"));
+		    }
+		}
+		else{
+		    $payload = json_encode(array("mensaje" => "No existe usuario con el id ingresado"));
+		}
+		
+
+		 $response->getBody()->write($payload);
+    	return $response
+      	->withHeader('Content-Type', 'application/json');
+	}
+
+	public function borrarUno($request, $response, $args){
+		$params = json_decode(file_get_contents('php://input'), true);
+
+	    if (Usuario::borrar($params['id']) != false) {
+	      $payload = json_encode(array("mensaje" => "Usuario eliminado con éxito"));
+	    } else {
+	      $payload = json_encode(array("mensaje" => "Error al borrar el usuario"));
+	    }
+
+		 $response->getBody()->write($payload);
+    	return $response
+      	->withHeader('Content-Type', 'application/json');
+	}
+
 	public function traerUno($request, $response, $args){
 		$id = $args['id'];
 		$usuario = Usuario::getById($id);

@@ -64,6 +64,34 @@ class Usuario
 
         return $query->fetchObject();
 	}
+
+	public static function modificar($usuario){
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("UPDATE usuarios SET nombre=:nombre, estado=:estado, sector=:sector, password=:password where id = :id");
+        $query->bindValue(':nombre', $usuario->nombre);
+        $query->bindValue(':estado', $usuario->estado);
+        $query->bindValue(':sector', $usuario->sector);
+        $query->bindValue(':password', $usuario->password);
+        $query->bindValue(':id', $usuario->id);
+        $query->execute();
+
+        return true;
+	}
+
+	public static function borrar($id){
+		if(Usuario::getById($id)!=false){
+			$objDataAccess = AccesoDatos::obtenerInstancia();
+	        $query = $objDataAccess->prepararConsulta("DELETE FROM usuarios where id = :id");
+	        $query->bindValue(':id', $id);
+	        $query->execute();
+
+	        return true;
+		}
+		else{
+			return false;
+		}
+		
+	}
 }
 
 
