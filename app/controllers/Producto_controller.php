@@ -1,5 +1,6 @@
 <?php 
 require_once './models/Producto.php';
+
 class Producto_controller{
 
 	public function cargarUno($request, $response, $args){

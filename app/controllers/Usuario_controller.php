@@ -1,11 +1,12 @@
 <?php 
 require_once './models/Usuario.php';
 require_once './models/Log.php';
+require_once './models/AutentificadorToken.php';
 class Usuario_controller{
 
 	public function cargarUno($request, $response, $args){
 		$params = $request->getParsedBody();
-		$usuario = Usuario::crearUno($params['nombre'], $params['estado'], $params['sector'], $params['password']);
+		$usuario = Usuario::crearUno($params['nombre'], $params['estado'], $params['sector'], $params['password'],$params['documento']);
 
 	    if (Usuario::insertarUno($usuario) > 0) {
 	      $payload = json_encode(array("mensaje" => "usuario creado con éxito"));
@@ -26,6 +27,7 @@ class Usuario_controller{
 			$usuario->estado = $params['estado'];
 			$usuario->sector = $params['sector'];
 			$usuario->password = $params['password'];
+			$usuario->documento = $params['documento'];
 
 		    if (Usuario::modificar($usuario) != false) {
 		      $payload = json_encode(array("mensaje" => "Usuario modificado con éxito"));
@@ -103,6 +105,21 @@ class Usuario_controller{
     	return $response
       	->withHeader('Content-Type', 'application/json');
 	}
+
+    public function login($request, $response){
+        $parametros = $request->getParsedBody();
+        $usuario = Usuario::getByUser($parametros['user'], $parametros['documento'], $parametros['sector']);
+        if($usuario != false && password_verify($parametros['password'], $usuario->password)){
+            $token = AutentificadorToken::crearToken(array('usuario'=>$parametros['user'], 'password'=>$parametros['password'],'sector'=>$parametros['sector'], 'documento'=>$parametros['documento']));
+            $payload =  json_encode(array('mensaje'=>'Inicio de sesion exitoso', 'token'=>json_encode($token)));
+        }
+        else{
+            $payload = json_encode(array("No existe usuario con los datos ingresados"));
+        }
+
+        $response->getBody()->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }
 
 
 

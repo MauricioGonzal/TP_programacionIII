@@ -4,14 +4,16 @@ require_once './models/Producto.php';
 
 class Pedido{
 
-	function __construct($producto, $cantidad)
+	function __construct($mozo, $mesa, $numero)
 	{
-		$this->producto = $producto;
-		$this->cantidad = $cantidad;
+		$this->mozo = $mozo;
+		$this->mesa = $mesa;
+		$this->numero = $numero;
+		$this->imagen = $imagen;
 	}
 
-	public static function crearUno($producto, $cantidad){
-		$pedido = new Pedido($producto, $cantidad);
+	public static function crearUno($mozo, $mesa, $numero){
+		$pedido = new Pedido($mozo, $mesa, $numero);
 		return $pedido;
 	}
 
@@ -23,24 +25,36 @@ class Pedido{
         return $query->fetchObject();
 	}
 
-	public static function insertarUno($pedido){
+	/*public static function insertarUno($pedido){
 
-		$stockRestante =  Producto::hayStock($pedido->producto, $pedido->cantidad);
+		$stockRestante =  Producto::hayStock($pedido->producto, $pedido->cantidad, $pedido->mesa);
 		if($stockRestante!==false){
 			$producto = Producto::getById($pedido->producto);
 			$producto->stock = $stockRestante;
 			Producto::modificar($producto);
 
 			$objDataAccess = AccesoDatos::obtenerInstancia();
-	        $query = $objDataAccess->prepararConsulta("INSERT INTO pedidos (producto, cantidad) 
-	        VALUES (:producto, :cantidad)");
+	        $query = $objDataAccess->prepararConsulta("INSERT INTO pedidos (producto, cantidad, mesa) 
+	        VALUES (:producto, :cantidad, :mesa)");
 	        $query->bindValue(':producto', $pedido->producto);
 	        $query->bindValue(':cantidad', $pedido->cantidad);
+	        $query->bindValue(':mesa', $pedido->mesa);
 	        $query->execute();
 	        return $objDataAccess->obtenerUltimoId();
 		}
 		else return -1;
         
+	}*/
+
+	public static function insertarUno($pedido){
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("INSERT INTO pedidos (producto, cantidad, mesa) 
+        VALUES (:producto, :cantidad, :mesa)");
+        $query->bindValue(':producto', $pedido->producto);
+        $query->bindValue(':cantidad', $pedido->cantidad);
+        $query->bindValue(':mesa', $pedido->mesa);
+        $query->execute();
+        return $objDataAccess->obtenerUltimoId();
 	}
 
 	public static function getAll(){
@@ -56,13 +70,28 @@ class Pedido{
 
 	public static function modificar($pedido){
 		$objDataAccess = AccesoDatos::obtenerInstancia();
-        $query = $objDataAccess->prepararConsulta("UPDATE pedidos SET producto=:producto, cantidad=:cantidad where id = :id");
+        $query = $objDataAccess->prepararConsulta("UPDATE pedidos SET producto=:producto, cantidad=:cantidad, mesa=:mesa where id = :id");
         $query->bindValue(':producto', $pedido->producto);
         $query->bindValue(':cantidad', $pedido->cantidad);
+        $query->bindValue(':mesa', $pedido->mesa);
         $query->bindValue(':id', $pedido->id);
         $query->execute();
 
         return true;
+	}
+
+	public static function borrar($id){
+		if(Pedido::getById($id)!=false){
+			$objDataAccess = AccesoDatos::obtenerInstancia();
+	        $query = $objDataAccess->prepararConsulta("DELETE FROM mesa where id = :id");
+	        $query->bindValue(':id', $id);
+	        $query->execute();
+	        return true;
+		}
+		else{
+			return false;
+		}
+		
 	}
 
 }

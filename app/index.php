@@ -15,8 +15,7 @@ require_once './controllers/Producto_controller.php';
 require_once './controllers/Usuario_controller.php';
 require_once './controllers/Mesa_controller.php';
 require_once './controllers/Pedido_controller.php';
-require_once './middlewares/Logguer.php';
-require_once './middlewares/Verificador.php';
+require_once './middlewares/VerificadorToken.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
@@ -30,17 +29,19 @@ $app->group('/producto', function (RouteCollectorProxy $group) {
   	$group->post('[/]', \Producto_controller::class . ':cargarUno');
   	$group->put('[/]', \Producto_controller::class . ':modificarUno');
   	$group->delete('[/]', \Producto_controller::class . ':borrarUno');
-})/*->add(\Verificador::class . ':VerificarRango')*/;
+})->add(\VerificadorToken::class . ':validarRequest');
 
 //usuarios
 $app->group('/usuario', function (RouteCollectorProxy $group) {
 	$group->get('[/]', \Usuario_controller::class . ':TraerTodos'); 
   	$group->get('/{id}', \Usuario_controller::class . ':TraerUno');
   	$group->post('[/]', \Usuario_controller::class . ':cargarUno');
-  	$group->post('/listarPedidos', \Usuario_controller::class . ':listarPedidos')->add(\Logguer::class . ':login');
+  	$group->post('/listarPedidos', \Usuario_controller::class . ':listarPedidos');
   	$group->put('[/]', \Usuario_controller::class . ':modificarUno');
   	$group->delete('[/]', \Usuario_controller::class . ':borrarUno');
-});
+})->add(\VerificadorToken::class . ':validarRequest');
+
+$app->post('/login', \Usuario_controller::class . ':login');
 
 //mesas
 $app->group('/mesa', function (RouteCollectorProxy $group) {
@@ -57,6 +58,7 @@ $app->group('/pedido', function (RouteCollectorProxy $group) {
   	$group->get('/{id}', \Pedido_controller::class . ':TraerUno');
   	$group->post('[/]', \Pedido_controller::class . ':cargarUno');
   	$group->put('[/]', \Pedido_controller::class . ':modificarUno');
+  	$group->delete('[/]', \Pedido_controller::class . ':borrarUno');
 });
 
 //encargos

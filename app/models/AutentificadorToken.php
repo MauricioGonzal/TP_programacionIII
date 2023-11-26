@@ -1,8 +1,10 @@
-<?php
+<?php 
+
 require_once '../vendor/autoload.php';
+require_once './models/Usuario.php';
 use Firebase\JWT\JWT;
 
-class AutentificadorJWT
+class AutentificadorToken
 {
     private static $claveSecreta = 'ClaveSuperSecreta@';
     private static $tipoEncriptacion = ['HS256'];
@@ -18,7 +20,7 @@ class AutentificadorJWT
         */
         $payload = array(
         	'iat'=>$ahora,
-            'exp' => $ahora + (60),
+            'exp' => $ahora + (1800),
             'aud' => self::Aud(),
             'data' => $datos,
             'app'=> "API REST CD 2017"
@@ -86,3 +88,7 @@ class AutentificadorJWT
         return sha1($aud);
     }
 }
+
+
+
+?>

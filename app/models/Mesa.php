@@ -25,6 +25,14 @@ class Mesa {
         return $query->fetchObject();
 	}
 
+	public static function getByCodigo($codigo){
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("SELECT * FROM mesa where codigo = :codigo");
+        $query->bindValue(':codigo', $codigo);
+        $query->execute();
+        return $query->fetchObject();
+	}
+
 	public static function insertarUno($mesa){
 		$objDataAccess = AccesoDatos::obtenerInstancia();
         $query = $objDataAccess->prepararConsulta("INSERT INTO mesa (codigo, estado) 
@@ -59,12 +67,11 @@ class Mesa {
 	}
 
 	public static function borrar($id){
-		if(Usuario::getById($id)!=false){
+		if(Mesa::getById($id)!=false){
 			$objDataAccess = AccesoDatos::obtenerInstancia();
 	        $query = $objDataAccess->prepararConsulta("DELETE FROM mesa where id = :id");
 	        $query->bindValue(':id', $id);
 	        $query->execute();
-
 	        return true;
 		}
 		else{
@@ -72,9 +79,6 @@ class Mesa {
 		}
 		
 	}
-
-
-
 
 }
 

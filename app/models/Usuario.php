@@ -4,21 +4,28 @@ require_once './db/AccesoDatos.php';
 class Usuario
 {
 	//Si un usuario no tiene sector es socio
+	CONST MOZO = 1;
+	CONST COCINA = 2;
+	CONST TRAGOSYVINOS = 3;
+	CONST CERVEZA = 4;
+	CONST CANDYBAR = 5;
 
 	CONST BORRADO = 0;
 	CONST ACTIVO = 1;
 	CONST SUSPENDIDO = 2;
 
-	function __construct($nombre, $estado, $sector, $password)
+	function __construct($nombre, $estado, $sector, $password, $documento)
 	{
 		$this->nombre = $nombre;
 		$this->estado = $estado;
 		$this->sector = $sector;
 		$this->password = $password;
+		$this->documento = $documento;
 	}
 
-	public static function crearUno($nombre, $estado, $sector, $password){
-		$usuario = new Usuario($nombre, $estado, $sector, $password);
+	public static function crearUno($nombre, $estado, $sector, $password, $documento){
+		$password = password_hash($password, PASSWORD_BCRYPT);
+		$usuario = new Usuario($nombre, $estado, $sector, $password, $documento);
 		return $usuario;
 	}
 
@@ -32,12 +39,13 @@ class Usuario
 
 	public static function insertarUno($usuario){
 		$objDataAccess = AccesoDatos::obtenerInstancia();
-        $query = $objDataAccess->prepararConsulta("INSERT INTO usuarios (nombre, estado, sector,password) 
-        VALUES (:nombre, :estado, :sector, :password)");
+        $query = $objDataAccess->prepararConsulta("INSERT INTO usuarios (nombre, estado, sector,password, documento) 
+        VALUES (:nombre, :estado, :sector, :password, :documento)");
         $query->bindValue(':nombre', $usuario->nombre);
         $query->bindValue(':estado', $usuario->estado);
         $query->bindValue(':sector', $usuario->sector);
         $query->bindValue(':password', $usuario->password);
+        $query->bindValue(':documento', $usuario->documento);
         $query->execute();
 
         return $objDataAccess->obtenerUltimoId();
@@ -54,12 +62,12 @@ class Usuario
         return $usuarios;
 	}
 
-	public static function getByUser($user, $password, $sector){
-				$objDataAccess = AccesoDatos::obtenerInstancia();
-        $query = $objDataAccess->prepararConsulta("SELECT * FROM usuarios where nombre=:nombre AND password=:password AND sector=:sector");
+	public static function getByUser($user, $documento, $sector){
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("SELECT * FROM usuarios where nombre=:nombre AND documento=:documento AND sector=:sector");
         $query->bindValue(':nombre', $user);
-        $query->bindValue(':password', $password);
         $query->bindValue(':sector', $sector);
+        $query->bindValue(':documento', $documento);
         $query->execute();
 
         return $query->fetchObject();
@@ -67,11 +75,12 @@ class Usuario
 
 	public static function modificar($usuario){
 		$objDataAccess = AccesoDatos::obtenerInstancia();
-        $query = $objDataAccess->prepararConsulta("UPDATE usuarios SET nombre=:nombre, estado=:estado, sector=:sector, password=:password where id = :id");
+        $query = $objDataAccess->prepararConsulta("UPDATE usuarios SET nombre=:nombre, estado=:estado, sector=:sector, password=:password, documento=:documento where id = :id");
         $query->bindValue(':nombre', $usuario->nombre);
         $query->bindValue(':estado', $usuario->estado);
         $query->bindValue(':sector', $usuario->sector);
         $query->bindValue(':password', $usuario->password);
+        $query->bindValue(':documento', $usuario->documento);
         $query->bindValue(':id', $usuario->id);
         $query->execute();
 
@@ -91,6 +100,10 @@ class Usuario
 			return false;
 		}
 		
+	}
+
+	public static function esSocio($sector){
+		return $sector == 0;
 	}
 }
 

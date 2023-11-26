@@ -76,7 +76,7 @@ class Producto
 		
 	}
 
-	public function hayStock($producto, $cantidad){
+	public static function hayStock($producto, $cantidad){
 		$producto = Producto::getById($producto);
 		$stockRestante = $producto->stock - $cantidad;
 		if($stockRestante >=0) return $stockRestante;
