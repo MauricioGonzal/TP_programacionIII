@@ -56,7 +56,7 @@ class Encargo{
 	public static function getBySector($sector){
 		$encargos = array();
 		$objDataAccess = AccesoDatos::obtenerInstancia();
-        $query = $objDataAccess->prepararConsulta("SELECT * FROM encargos JOIN productos ON productos.id = encargos.producto where productos.sector = :sector AND estado = :estado");
+        $query = $objDataAccess->prepararConsulta("SELECT encargos.id as id_encargo,pedido, producto, cantidad, usuario,estado FROM encargos JOIN productos ON productos.id = encargos.producto where productos.sector = :sector AND estado = :estado");
         $query->bindValue(':sector', $sector);
         $query->bindValue(':estado', SELF::PENDIENTE);
 
@@ -80,6 +80,18 @@ class Encargo{
         $query->execute();
 
         return true;
+	}
+
+	public static function tomarEncargo($id, $usuario){
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("UPDATE encargos SET estado=1, usuario=:usuario, tiempo_preparacion = :tiempo_preparacion where id = :id");
+        $query->bindValue(':usuario', $usuario);
+        $query->bindValue(':tiempo_preparacion', $tiempo_preparacion);
+        $query->bindValue(':id', $id);
+        $query->execute();
+
+        return true;
+
 	}
 
 

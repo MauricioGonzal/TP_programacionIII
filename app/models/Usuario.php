@@ -105,6 +105,16 @@ class Usuario
 	public static function esSocio($sector){
 		return $sector == 0;
 	}
+
+	public static function getByDocumento($documento){
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("SELECT * FROM usuarios where documento = :documento");
+        $query->bindValue(':documento', $documento);
+        $query->execute();
+
+        return $query->fetchObject();
+
+	}
 }
 
 

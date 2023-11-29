@@ -9,8 +9,10 @@ class Pedido_controller{
 		//$_FILES['imagen']['tmp_name'];
 		$params = $request->getParsedBody();
 		$msg = '';
+		$payload ='';
 		if(Mesa::getByCodigo($params['mesa'])===false) $payload = json_encode(array("mensaje" => "No existe mesa con el codigo ingresado"));
 		else{
+
 			$pedido = Pedido::crearUno($params['mozo'], $params['mesa'], $params['numero']);
 			$id_pedido = Pedido::insertarUno($pedido);
 			$productos = explode(',', $params['producto']);
@@ -23,8 +25,7 @@ class Pedido_controller{
 					$producto = Producto::getById($productos[$i]);
 					$producto->stock = $stockRestante;
 					Producto::modificar($producto);
-
-					$encargo = Encargo::crearUno($id_pedido,$productos[$i],$cantidad[$i], 0, 0);
+					$encargo = Encargo::crearUno($id_pedido,$productos[$i],$cantidades[$i], 0, 0);
 					$id_encargo = Encargo::insertarUno($encargo);
 					if($id_encargo === false){
   				      	$payload = json_encode(array("mensaje" => "Error al crear el pedido"));
@@ -32,11 +33,17 @@ class Pedido_controller{
 			    	}	
 				}
 				else{
-					$msg .= "No hay stock del producto con ID: " . $productos[$i] . '. '; 
+					$payload = json_encode(array("No hay stock del producto con ID: " . $productos[$i] . '. '));
+					break;
 				}
 				
 				
 		
+			}
+			if($payload == ''){
+				Pedido::guardarImagen($id_pedido,$_FILES['imagen']['tmp_name']);
+
+				$payload = json_encode(array("Pedido creado exitosamente"));
 			}
 
 		}

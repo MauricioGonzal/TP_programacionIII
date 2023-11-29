@@ -9,7 +9,6 @@ class Pedido{
 		$this->mozo = $mozo;
 		$this->mesa = $mesa;
 		$this->numero = $numero;
-		$this->imagen = $imagen;
 	}
 
 	public static function crearUno($mozo, $mesa, $numero){
@@ -48,11 +47,11 @@ class Pedido{
 
 	public static function insertarUno($pedido){
 		$objDataAccess = AccesoDatos::obtenerInstancia();
-        $query = $objDataAccess->prepararConsulta("INSERT INTO pedidos (producto, cantidad, mesa) 
-        VALUES (:producto, :cantidad, :mesa)");
-        $query->bindValue(':producto', $pedido->producto);
-        $query->bindValue(':cantidad', $pedido->cantidad);
+        $query = $objDataAccess->prepararConsulta("INSERT INTO pedidos (mesa, mozo, numero) 
+        VALUES (:mesa, :mozo, :numero)");
+        $query->bindValue(':mozo', $pedido->mozo);
         $query->bindValue(':mesa', $pedido->mesa);
+        $query->bindValue(':numero', $pedido->numero);
         $query->execute();
         return $objDataAccess->obtenerUltimoId();
 	}
@@ -70,10 +69,10 @@ class Pedido{
 
 	public static function modificar($pedido){
 		$objDataAccess = AccesoDatos::obtenerInstancia();
-        $query = $objDataAccess->prepararConsulta("UPDATE pedidos SET producto=:producto, cantidad=:cantidad, mesa=:mesa where id = :id");
-        $query->bindValue(':producto', $pedido->producto);
-        $query->bindValue(':cantidad', $pedido->cantidad);
+        $query = $objDataAccess->prepararConsulta("UPDATE pedidos SET mesa=:mesa, mozo=:mozo, numero=:numero where id = :id");
         $query->bindValue(':mesa', $pedido->mesa);
+        $query->bindValue(':mozo', $pedido->mozo);
+        $query->bindValue(':numero', $pedido->numero);
         $query->bindValue(':id', $pedido->id);
         $query->execute();
 
@@ -92,6 +91,14 @@ class Pedido{
 			return false;
 		}
 		
+	}
+
+	public static function guardarImagen($id, $filetmp){
+			$filename = $id . '.jpg';
+			if(move_uploaded_file($filetmp, 'imagenes_pedidos' .'/' . $filename)){
+				return true;
+			}
+			return false;
 	}
 
 }

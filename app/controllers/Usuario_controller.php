@@ -2,19 +2,21 @@
 require_once './models/Usuario.php';
 require_once './models/Log.php';
 require_once './models/AutentificadorToken.php';
+require_once './models/Sector.php';
+
 class Usuario_controller{
 
 	public function cargarUno($request, $response, $args){
 		$params = $request->getParsedBody();
-		$usuario = Usuario::crearUno($params['nombre'], $params['estado'], $params['sector'], $params['password'],$params['documento']);
+		$sector = Sector::getSector($params['sector'])->id;
+		$usuario = Usuario::crearUno($params['nombre'], $params['estado'], $sector, $params['password'],$params['documento']);
 
 	    if (Usuario::insertarUno($usuario) > 0) {
-	      $payload = json_encode(array("mensaje" => "usuario creado con éxito"));
+	      $payload = json_encode(array("mensaje" => "Usuario creado con exito."));
 	    } else {
-	      $payload = json_encode(array("mensaje" => "Error al crear el usuario"));
+	      $payload = json_encode(array("mensaje" => "Error al crear el usuario."));
 	    }
-
-		 $response->getBody()->write($payload);
+	 	$response->getBody()->write($payload);
     	return $response
       	->withHeader('Content-Type', 'application/json');
 	}
@@ -92,13 +94,25 @@ class Usuario_controller{
 
 	public function listarPedidos($request, $response){
 		$params = $request->getParsedBody();
-		$encargosPendientes = Encargo::getBySector($params['sector']);
+		$empleado = Usuario::getById($params['empleado']);
+
+		if($empleado !== false){
+			$encargosPendientes = Encargo::getBySector($empleado->sector);
+		}
+		else{
+			$payload = json_encode(array('mensaje'=>'No existe el empleado ingresado'));
+			$response->getBody()->write($payload);
+    		return $response
+     	 	->withHeader('Content-Type', 'application/json');
+
+		}
+		
 
 		if(count($encargosPendientes)>0){
 			$payload = json_encode(array('mensaje'=>'Encargos Pendientes', 'encargos'=>$encargosPendientes));
 		}
 		else{
-			$payload = json_encode(array('mensaje'=>'No hay encargos pendientes para el sector'));
+			$payload = json_encode(array('mensaje'=>'No hay encargos pendientes para el empleado ingresado'));
 		}
 
 		$response->getBody()->write($payload);

@@ -87,6 +87,51 @@ class Producto_controller{
       	->withHeader('Content-Type', 'application/json');
 	}
 
+	public function descargarDatosCsv($request, $response){
+        $productos = Producto::getAll();
+        $stream = fopen('php://temp', 'w+');
+        foreach ($productos as $p) {
+            fputcsv($stream, get_object_vars($p));
+        }
+        //fclose($stream);
+
+        $response = $response->withHeader('Content-Type', 'text/csv');
+        $response = $response->withHeader('Content-Disposition', 'attachment; filename="productos.csv"');
+        $response = $response->withHeader('Pragma', 'no-cache');
+        $response = $response->withHeader('Expires', '0');
+        $response = $response->withBody(new \Slim\Psr7\Stream($stream));
+        return $response;
+	}
+
+    public static function cargarDatosCsv($request, $response)
+    {
+        $CSV = $request->getUploadedFiles()['archivo'];
+        $stream = $CSV->getStream();
+        $content = ($stream)->getContents();
+        $lines = explode("\n", $content);
+        $productoList = [];
+        foreach ($lines as $l) {
+            $data = str_getcsv($l);
+            if (empty(trim($data[0]))) {
+                break;
+            }
+            echo($data[0]);
+            echo($data[0]);
+            $producto = Producto::crearUno($data[1], $data[2], $data[3], $data[4], $data[5]);
+            if(Producto::insertarUno($producto)===false){
+            	die('error');
+            }
+            //$productoList[] = $product;
+        }
+
+        $payload = json_encode(array("mensaje" => "Archivo cargado con exito"));
+
+
+        $response->getBody()->write($payload);
+        return $response
+            ->withHeader('Content-Type', 'application/json');
+    }
+
 
 
 }
