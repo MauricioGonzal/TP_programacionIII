@@ -82,7 +82,7 @@ class Encargo{
         return true;
 	}
 
-	public static function tomarEncargo($id, $usuario){
+	public static function tomarEncargo($id, $usuario, $tiempo_preparacion){
 		$objDataAccess = AccesoDatos::obtenerInstancia();
         $query = $objDataAccess->prepararConsulta("UPDATE encargos SET estado=1, usuario=:usuario, tiempo_preparacion = :tiempo_preparacion where id = :id");
         $query->bindValue(':usuario', $usuario);
@@ -91,6 +91,17 @@ class Encargo{
         $query->execute();
 
         return true;
+
+	}
+
+	public static function sePuedeTomar($id_usuario, $id_encargo){
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("SELECT * FROM encargos JOIN productos ON productos.id = encargos.producto JOIN usuarios ON usuarios.sector = productos.sector where encargos.id = :id_encargo AND usuarios.id = :id_usuario");
+        $query->bindValue(':id_encargo', $id_encargo);
+        $query->bindValue(':id_usuario', $id_usuario);
+        $query->execute();
+
+        return $query->fetchObject();
 
 	}
 

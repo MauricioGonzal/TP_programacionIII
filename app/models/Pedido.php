@@ -24,6 +24,15 @@ class Pedido{
         return $query->fetchObject();
 	}
 
+	public static function getByPedidoYMesa($numero_pedido, $codigo_mesa){
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("SELECT * FROM pedidos where mesa = :mesa AND numero = :numero");
+        $query->bindValue(':mesa', $codigo_mesa);
+        $query->bindValue(':numero', $numero_pedido);
+        $query->execute();
+        return $query->fetchObject();
+	}
+
 	/*public static function insertarUno($pedido){
 
 		$stockRestante =  Producto::hayStock($pedido->producto, $pedido->cantidad, $pedido->mesa);
@@ -93,12 +102,22 @@ class Pedido{
 		
 	}
 
-	public static function guardarImagen($id, $filetmp){
-			$filename = $id . '.jpg';
+	public static function guardarImagen($id_pedido, $filetmp, $id_mesa){
+			$filename = 'pedido' . $id_pedido . 'mesa' . $id_mesa . '.jpg';
 			if(move_uploaded_file($filetmp, 'imagenes_pedidos' .'/' . $filename)){
 				return true;
 			}
 			return false;
+	}
+
+	public static function getTiempoDemora($pedido){
+		$pedidos = array();
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("SELECT max(encargos.tiempo_preparacion) as tiempo_demora FROM encargos where encargos.pedido = :pedido");
+        $query->bindValue(':pedido', $pedido->id);
+        $query->execute();
+        
+        return $query->fetchObject();
 	}
 
 }

@@ -7,6 +7,7 @@ class Pedido_controller{
 
 	public function cargarUno($request, $response, $args){
 		//$_FILES['imagen']['tmp_name'];
+
 		$params = $request->getParsedBody();
 		$msg = '';
 		$payload ='';
@@ -41,9 +42,11 @@ class Pedido_controller{
 		
 			}
 			if($payload == ''){
-				Pedido::guardarImagen($id_pedido,$_FILES['imagen']['tmp_name']);
-
+				if(isset($_FILES['imagen']['tmp_name'])){
+					Pedido::guardarImagen($id_pedido,$_FILES['imagen']['tmp_name'],$params['mesa']);
+				}
 				$payload = json_encode(array("Pedido creado exitosamente"));
+				Mesa::cambiarEstado($params['mesa'], 1);
 			}
 
 		}
@@ -109,6 +112,64 @@ class Pedido_controller{
 	    }
 
 		 $response->getBody()->write($payload);
+    	return $response
+      	->withHeader('Content-Type', 'application/json');
+	}
+
+	public function subirImagen($request, $response){
+		$params = $request->getParsedBody();
+		if(Pedido::guardarImagen($params['id_pedido'],$_FILES['imagen']['tmp_name'], $params['id_mesa'])){
+	      $payload = json_encode(array("mensaje" => "Imagen subida con exito"));
+		}
+		else{
+	      $payload = json_encode(array("mensaje" => "Error al subir la imagen"));
+		}
+
+	 	$response->getBody()->write($payload);
+    	return $response
+      	->withHeader('Content-Type', 'application/json');
+	}
+
+	public function obtenerTiempoDemora($request, $response){
+		$params = $request->getParsedBody();
+
+		$pedido = Pedido::getByPedidoYMesa($params['numero_pedido'], $params['codigo_mesa']);
+
+		if($pedido != false){
+			$resultado = Pedido::getTiempoDemora($pedido)->tiempo_demora;
+			if($resultado != 0){
+				$payload = json_encode(array("mensaje" => "El tiempo de demora de su pedido es de " . $resultado . " minutos"));
+			}
+			else{
+				$payload = json_encode(array("mensaje" => "El pedido aun esta a la espera de ser asignado."));
+			}
+			
+		}
+		else{
+			$payload = json_encode(array("mensaje" => "No existe un pedido registrado con los datos ingresados."));
+		}
+
+
+
+	 	$response->getBody()->write($payload);
+    	return $response
+      	->withHeader('Content-Type', 'application/json');
+
+	}
+
+	public function listarPedidos($request, $response, $args){
+		$pedidos = Pedido::getAll();
+		$msj = array();
+		foreach($pedidos as $p){
+			$resultado = Pedido::getTiempoDemora($p)->tiempo_demora;
+
+			$msj['id_pedido'] = $p->id;
+			if($resultado == 0) $msj['tiempo_demora'] = 'El pedido esta a la espera de ser asignado';
+			else $msj['tiempo_demora'] = $resultado . ' minutos';
+		}
+
+		$payload = json_encode(array("mensaje" => $msj));
+	 	$response->getBody()->write($payload);
     	return $response
       	->withHeader('Content-Type', 'application/json');
 	}

@@ -80,6 +80,16 @@ class Mesa {
 		
 	}
 
+	public static function cambiarEstado($id_mesa, $estado){
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("UPDATE mesa SET estado=:estado where id = :id");
+        $query->bindValue(':estado', $estado);
+        $query->bindValue(':id', $id_mesa);
+        $query->execute();
+
+        return true;
+	} 
+
 }
 
 

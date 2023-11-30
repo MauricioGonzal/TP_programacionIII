@@ -58,8 +58,12 @@ $app->group('/pedido', function (RouteCollectorProxy $group) {
 	$group->post('[/]', \Pedido_controller::class . ':cargarUno');
   	$group->put('[/]', \Pedido_controller::class . ':modificarUno');
   	$group->delete('[/]', \Pedido_controller::class . ':borrarUno');
+  	$group->get('/getPedidosYDemora', \Pedido_controller::class . ':listarPedidos');
 	$group->get('[/]', \Pedido_controller::class . ':TraerTodos'); 
   	$group->get('/{id}', \Pedido_controller::class . ':TraerUno');
+	$group->post('/subirImagen', \Pedido_controller::class . ':subirImagen');
+	$group->post('/getTiempoDemora', \Pedido_controller::class . ':obtenerTiempoDemora');
+
 });
 
 //encargos
