@@ -12,6 +12,22 @@ class Mesa {
 		$this->estado = $estado;
 	}
 
+	public static function getCerrada(){
+		return SELF::CERRADA;
+	}
+
+	public static function getEsperandoPedido(){
+		return SELF::ESPERANDOPEDIDO;
+	}
+
+	public static function getComiendo(){
+		return SELF::COMIENDO;
+	}
+
+	public static function getPagando(){
+		return SELF::PAGANDO;
+	}
+
 	public static function crearUno($codigo, $estado){
 		$mesa = new Mesa($codigo, $estado);
 		return $mesa;
@@ -80,15 +96,24 @@ class Mesa {
 		
 	}
 
-	public static function cambiarEstado($id_mesa, $estado){
+	public static function cambiarEstado($codigo, $estado){
 		$objDataAccess = AccesoDatos::obtenerInstancia();
-        $query = $objDataAccess->prepararConsulta("UPDATE mesa SET estado=:estado where id = :id");
+        $query = $objDataAccess->prepararConsulta("UPDATE mesa SET estado=:estado where codigo = :codigo");
         $query->bindValue(':estado', $estado);
-        $query->bindValue(':id', $id_mesa);
+        $query->bindValue(':codigo', $codigo);
         $query->execute();
 
         return true;
-	} 
+	}
+
+	public static function getMasUsada(){
+		
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("SELECT mesa, COUNT( mesa ) AS total FROM pedidos GROUP BY mesa ORDER BY total DESC LIMIT 1");
+        $query->execute();
+
+        return $query->fetchObject();
+	}
 
 }
 

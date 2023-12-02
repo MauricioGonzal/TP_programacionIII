@@ -3,13 +3,6 @@ require_once './db/AccesoDatos.php';
 
 class Usuario
 {
-	//Si un usuario no tiene sector es socio
-	CONST MOZO = 1;
-	CONST COCINA = 2;
-	CONST TRAGOSYVINOS = 3;
-	CONST CERVEZA = 4;
-	CONST CANDYBAR = 5;
-
 	CONST BORRADO = 0;
 	CONST ACTIVO = 1;
 	CONST SUSPENDIDO = 2;
@@ -21,6 +14,18 @@ class Usuario
 		$this->sector = $sector;
 		$this->password = $password;
 		$this->documento = $documento;
+	}
+
+	public static function getActivo(){
+		return SELF::ACTIVO;
+	}
+
+	public static function getSuspendido(){
+		return SELF::SUSPENDIDO;
+	}
+
+	public static function getBorrado(){
+		return SELF::BORRADO;
 	}
 
 	public static function crearUno($nombre, $estado, $sector, $password, $documento){

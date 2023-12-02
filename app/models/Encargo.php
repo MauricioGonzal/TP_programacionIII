@@ -53,12 +53,12 @@ class Encargo{
         return $encargos;
 	}
 
-	public static function getBySector($sector){
+	public static function getBySector($sector, $estado){
 		$encargos = array();
 		$objDataAccess = AccesoDatos::obtenerInstancia();
         $query = $objDataAccess->prepararConsulta("SELECT encargos.id as id_encargo,pedido, producto, cantidad, usuario,estado FROM encargos JOIN productos ON productos.id = encargos.producto where productos.sector = :sector AND estado = :estado");
         $query->bindValue(':sector', $sector);
-        $query->bindValue(':estado', SELF::PENDIENTE);
+        $query->bindValue(':estado', $estado);
 
         $query->execute();
          while ($fila = $query->fetchObject()){
@@ -103,6 +103,58 @@ class Encargo{
 
         return $query->fetchObject();
 
+	}
+
+	public static function sePuedeServir($id_usuario, $id_encargo){
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("SELECT * FROM encargos JOIN productos ON productos.id = encargos.producto JOIN usuarios ON usuarios.sector = productos.sector where encargos.id = :id_encargo AND usuarios.id = :id_usuario AND encargos.estado = :estado");
+        $query->bindValue(':id_encargo', $id_encargo);
+        $query->bindValue(':id_usuario', $id_usuario);
+        $query->bindValue(':estado', SELF::ENPREPARACION);
+        $query->execute();
+
+        return $query->fetchObject();
+
+	}
+
+	public static function dejarParaServir($id, $usuario, $tiempo_realpreparacion){
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("UPDATE encargos SET estado=2, tiempo_realpreparacion = :tiempo_realpreparacion where id = :id");
+        $query->bindValue(':tiempo_realpreparacion', $tiempo_realpreparacion);
+        $query->bindValue(':id', $id);
+        $query->execute();
+
+        return true;
+
+	}
+
+	public static function getListosParaServir(){
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("SELECT * FROM encargos where estado = :estado");
+        $query->bindValue(':estado', SELF::LISTOPARASERVIR);
+        $query->execute();
+        $encargos = array();
+
+     	while ($fila = $query->fetchObject()){
+         	array_push($encargos, $fila);
+     	}
+
+        return $encargos;
+	}
+
+	public static function getEnPreparacionByPedido($id_pedido){
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("SELECT * FROM encargos where estado = :estado AND pedido = :pedido");
+        $query->bindValue(':estado', SELF::ENPREPARACION);
+        $query->bindValue(':pedido', $id_pedido);
+        $query->execute();
+        $encargos = array();
+
+     	while ($fila = $query->fetchObject()){
+         	array_push($encargos, $fila);
+     	}
+
+        return $encargos;
 	}
 
 

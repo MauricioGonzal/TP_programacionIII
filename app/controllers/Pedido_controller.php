@@ -174,5 +174,16 @@ class Pedido_controller{
       	->withHeader('Content-Type', 'application/json');
 	}
 
+	public function cobrar($request, $response, $args){
+		$params = $request->getParsedBody();
+		Mesa::cambiarEstado($params['mesa'], 3);
+		$payload = json_encode(array("mensaje"=>'Cobrando mesa'));
+
+		$response->getBody()->write($payload);
+    	return $response
+      	->withHeader('Content-Type', 'application/json');
+
+	}
+
 }
 ?>

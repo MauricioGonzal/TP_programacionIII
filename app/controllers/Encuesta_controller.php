@@ -1,16 +1,16 @@
 <?php 
-require_once './models/Mesa.php';
-
-class Mesa_controller{
+require_once './models/Encuesta.php';
+class Encuesta_controller{
 
 	public function cargarUna($request, $response, $args){
 		$params = $request->getParsedBody();
-		if(Mesa::getByCodigo($params['codigo']) === false){
-			$mesa = Mesa::crearUno($params['codigo'], Mesa::getCerrada());
-		    if (Mesa::insertarUno($mesa) > 0) $payload = json_encode(array("mensaje" => "Mesa creada con éxito"));
-	 		else $payload = json_encode(array("mensaje" => "Error al crear la mesa"));
-		}
-		else $payload = json_encode(array("mensaje" => "Ya existe una mesa con el codigo ingresado"));
+		$encuesta = Encuesta::crearUno($params['id_pedido'], $params['puntuacion_mesa'], $params['puntuacion_restaurante'], $params['puntuacion_mozo'], $params['puntuacion_cocinero'], $params['texto']);
+
+	    if (Encuesta::insertarUno($encuesta) > 0) {
+	      $payload = json_encode(array("mensaje" => "Encuesta creada con éxito"));
+	    } else {
+	      $payload = json_encode(array("mensaje" => "Error al crear la encuesta"));
+	    }
 
 	 	$response->getBody()->write($payload);
     	return $response
@@ -84,22 +84,17 @@ class Mesa_controller{
       	->withHeader('Content-Type', 'application/json');
 	}
 
-	public function cerrar($request, $response, $args){
-		$params = $request->getParsedBody();
-		Mesa::cambiarEstado($params['mesa'], 0);
-		$payload = json_encode(array("mensaje"=>'Mesa cerrada correctamente'));
+	public function listarMejoresComentarios($request, $response, $args){
+		$encuestas = Encuesta::getMejores();
 
-		$response->getBody()->write($payload);
-    	return $response
-      	->withHeader('Content-Type', 'application/json');
-	}
+		if(count($encuestas)>0){
+	      $payload = json_encode(array("mensaje" => $encuestas));
+		}
+		else{
+	      $payload = json_encode(array("mensaje" => "No hay encuestas cargadas"));
+		}
 
-	public function getMasUsada($request, $response, $args){
-		$params = $request->getParsedBody();
-		$mesaMasUsada = Mesa::getMasUsada();
-		$payload = json_encode(array("mensaje"=>'La mesa mas usada fue la mesa con el codigo: ' . $mesaMasUsada->mesa . '. Se ha usado ' . $mesaMasUsada->total . ' veces'));
-
-		$response->getBody()->write($payload);
+	 	$response->getBody()->write($payload);
     	return $response
       	->withHeader('Content-Type', 'application/json');
 	}

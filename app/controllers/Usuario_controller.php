@@ -9,7 +9,7 @@ class Usuario_controller{
 	public function cargarUno($request, $response, $args){
 		$params = $request->getParsedBody();
 		$sector = Sector::getSector($params['sector'])->id;
-		$usuario = Usuario::crearUno($params['nombre'], $params['estado'], $sector, $params['password'],$params['documento']);
+		$usuario = Usuario::crearUno($params['nombre'], Usuario::getActivo(), $sector, $params['password'],$params['documento']);
 
 	    if (Usuario::insertarUno($usuario) > 0) {
 	      $payload = json_encode(array("mensaje" => "Usuario creado con exito."));
@@ -92,44 +92,19 @@ class Usuario_controller{
       	->withHeader('Content-Type', 'application/json');
 	}
 
-	public function listarPedidos($request, $response){
-		$params = $request->getParsedBody();
-		$empleado = Usuario::getById($params['empleado']);
-
-		if($empleado !== false){
-			$encargosPendientes = Encargo::getBySector($empleado->sector);
-		}
-		else{
-			$payload = json_encode(array('mensaje'=>'No existe el empleado ingresado'));
-			$response->getBody()->write($payload);
-    		return $response
-     	 	->withHeader('Content-Type', 'application/json');
-
-		}
-		
-
-		if(count($encargosPendientes)>0){
-			$payload = json_encode(array('mensaje'=>'Encargos Pendientes', 'encargos'=>$encargosPendientes));
-		}
-		else{
-			$payload = json_encode(array('mensaje'=>'No hay encargos pendientes para el empleado ingresado'));
-		}
-
-		$response->getBody()->write($payload);
-    	return $response
-      	->withHeader('Content-Type', 'application/json');
-	}
-
     public function login($request, $response){
         $parametros = $request->getParsedBody();
-        $usuario = Usuario::getByUser($parametros['user'], $parametros['documento'], $parametros['sector']);
-        if($usuario != false && password_verify($parametros['password'], $usuario->password)){
-            $token = AutentificadorToken::crearToken(array('usuario'=>$parametros['user'], 'password'=>$parametros['password'],'sector'=>$parametros['sector'], 'documento'=>$parametros['documento']));
-            $payload =  json_encode(array('mensaje'=>'Inicio de sesion exitoso', 'token'=>json_encode($token)));
-        }
-        else{
-            $payload = json_encode(array("No existe usuario con los datos ingresados"));
-        }
+        
+        $sector = Sector::getSector($parametros['sector']);
+        if($sector != false){
+        	$usuario = Usuario::getByUser($parametros['user'], $parametros['documento'], $sector->id);
+    		if($usuario != false && password_verify($parametros['password'], $usuario->password)){
+            	$token = AutentificadorToken::crearToken(array('usuario'=>$parametros['user'], 'password'=>$parametros['password'],'sector'=>$sector->id, 'documento'=>$parametros['documento']));
+            	$payload =  json_encode(array('mensaje'=>'Inicio de sesion exitoso', 'token'=>json_encode($token)));
+        	}
+        	else $payload = json_encode(array("No existe usuario con los datos ingresados"));
+        } 
+        else $payload = json_encode(array("No existe el sector ingresado"));
 
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');
