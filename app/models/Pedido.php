@@ -33,6 +33,14 @@ class Pedido{
         return $query->fetchObject();
 	}
 
+	public function getByNumero($numero){
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("SELECT * FROM pedidos where numero = :numero");
+        $query->bindValue(':numero', $numero);
+        $query->execute();
+        return $query->fetchObject();
+	}
+
 	/*public static function insertarUno($pedido){
 
 		$stockRestante =  Producto::hayStock($pedido->producto, $pedido->cantidad, $pedido->mesa);
@@ -120,10 +128,19 @@ class Pedido{
         return $query->fetchObject();
 	}
 
-}
+	public static function listosParaServir(){
+		$pedidos = Pedido::getAll();
+		$listos = array();
+		if($pedidos != false){
+			foreach($pedidos as $p){
+				if(count(Encargo::isPedidoListoParaServir($p->id)) === 0) array_push($listos, $p);
+			}
 
-//guardar clave de usuario con hash
-//password_verify('1234', $hash)
+		}
+        return $listos;
+	}
+
+}
 
 //pedido puede tener mas de un producto, cada producto su propio estado(pedido), cada producto debiera tener su tiempo de preparacion
 

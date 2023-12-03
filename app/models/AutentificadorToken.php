@@ -62,8 +62,11 @@ class AutentificadorToken
             self::$tipoEncriptacion
         );
     }
-     public static function ObtenerData($token)
-    {
+     public static function ObtenerData($request)
+    {   
+        $header = $request->getHeaderLine('Authorization');
+        $token = trim(explode("Bearer", $header)[1]);
+        AutentificadorToken::VerificarToken($token);
         return JWT::decode(
             $token,
             self::$claveSecreta,

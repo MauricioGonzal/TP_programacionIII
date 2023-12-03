@@ -77,7 +77,7 @@ class Encuesta {
 	public static function getMejores(){
 		$encuestas = array();
 		$objDataAccess = AccesoDatos::obtenerInstancia();
-        $query = $objDataAccess->prepararConsulta("SELECT (sum(puntuacion_mesa) + sum(puntuacion_restaurante) + sum(puntuacion_mozo) + sum(puntuacion_cocinero))/4 AS promedio FROM encuesta GROUP BY id");
+        $query = $objDataAccess->prepararConsulta("SELECT encuesta.id, (sum(puntuacion_mesa) + sum(puntuacion_restaurante) + sum(puntuacion_mozo) + sum(puntuacion_cocinero))/4 AS promedio FROM encuesta GROUP BY id ORDER BY promedio DESC LIMIT 3");
         $query->execute();
          while ($fila = $query->fetchObject()){
          	array_push($encuestas, $fila);

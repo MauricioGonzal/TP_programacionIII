@@ -1,11 +1,10 @@
-<?php 
+<?php
 require_once './models/Usuario.php';
 require_once './models/Log.php';
 require_once './models/AutentificadorToken.php';
 require_once './models/Sector.php';
 
 class Usuario_controller{
-
 	public function cargarUno($request, $response, $args){
 		$params = $request->getParsedBody();
 		$sector = Sector::getSector($params['sector'])->id;
@@ -94,13 +93,15 @@ class Usuario_controller{
 
     public function login($request, $response){
         $parametros = $request->getParsedBody();
-        
         $sector = Sector::getSector($parametros['sector']);
+
         if($sector != false){
-        	$usuario = Usuario::getByUser($parametros['user'], $parametros['documento'], $sector->id);
+        	$usuario = Usuario::verificarExistencia($parametros['user'], $parametros['documento'], $sector->id);
     		if($usuario != false && password_verify($parametros['password'], $usuario->password)){
-            	$token = AutentificadorToken::crearToken(array('usuario'=>$parametros['user'], 'password'=>$parametros['password'],'sector'=>$sector->id, 'documento'=>$parametros['documento']));
-            	$payload =  json_encode(array('mensaje'=>'Inicio de sesion exitoso', 'token'=>json_encode($token)));
+            	$token = AutentificadorToken::crearToken(array('usuario'=>$usuario->id, 'password'=>$parametros['password'],'sector'=>$sector->id, 'documento'=>$usuario->documento));
+            	$payload = json_encode(array('mensaje'=>'Inicio de sesion exitoso', 'token'=>json_encode($token)));
+        		$log = Log::crearUno($parametros['user'], date('d-m-Y h:i:s', time()));
+        		Log::insertarUno($log);
         	}
         	else $payload = json_encode(array("No existe usuario con los datos ingresados"));
         } 
@@ -109,9 +110,6 @@ class Usuario_controller{
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');
     }
-
-
-
 }
 
 

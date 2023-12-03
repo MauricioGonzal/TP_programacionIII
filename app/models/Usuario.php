@@ -67,10 +67,10 @@ class Usuario
         return $usuarios;
 	}
 
-	public static function getByUser($user, $documento, $sector){
+	public static function getByUser($id, $documento, $sector){
 		$objDataAccess = AccesoDatos::obtenerInstancia();
-        $query = $objDataAccess->prepararConsulta("SELECT * FROM usuarios where nombre=:nombre AND documento=:documento AND sector=:sector");
-        $query->bindValue(':nombre', $user);
+        $query = $objDataAccess->prepararConsulta("SELECT * FROM usuarios where id=:id AND documento=:documento AND sector=:sector");
+        $query->bindValue(':id', $id);
         $query->bindValue(':sector', $sector);
         $query->bindValue(':documento', $documento);
         $query->execute();
@@ -118,7 +118,18 @@ class Usuario
         $query->execute();
 
         return $query->fetchObject();
+	}
 
+
+	public static function verificarExistencia($nombre, $documento, $sector){
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("SELECT * FROM usuarios where nombre=:nombre AND documento=:documento AND sector=:sector");
+        $query->bindValue(':nombre', $nombre);
+        $query->bindValue(':sector', $sector);
+        $query->bindValue(':documento', $documento);
+        $query->execute();
+
+        return $query->fetchObject();
 	}
 }
 

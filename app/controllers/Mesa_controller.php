@@ -86,8 +86,14 @@ class Mesa_controller{
 
 	public function cerrar($request, $response, $args){
 		$params = $request->getParsedBody();
-		Mesa::cambiarEstado($params['mesa'], 0);
-		$payload = json_encode(array("mensaje"=>'Mesa cerrada correctamente'));
+		if(Mesa::getByCodigo($params['mesa'])!== false){
+			Mesa::cambiarEstado($params['mesa'], 0);
+			$payload = json_encode(array("mensaje"=>'Mesa cerrada correctamente'));
+		}
+		else{
+			$payload = json_encode(array("mensaje"=>'La mesa ingresada no existe.'));
+		}
+
 
 		$response->getBody()->write($payload);
     	return $response

@@ -2,15 +2,13 @@
 
 class Sector{
 
-//Si no tiene sector es cliente.
 
-	CONST CLIENTE = 0;
 	CONST SOCIO = 1;
 	CONST BARTENDER = 2;
 	CONST CERVEZERO = 3;
 	CONST COCINERO = 4;
 	CONST MOZO = 5;
-
+	CONST CLIENTE = 6;
 
 	public static function getSector($sector){
 		$sector = strtolower($sector);
