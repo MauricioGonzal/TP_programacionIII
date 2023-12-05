@@ -109,19 +109,15 @@ class Producto_controller{
         $stream = $CSV->getStream();
         $content = ($stream)->getContents();
         $lines = explode("\n", $content);
-        $productoList = [];
         foreach ($lines as $l) {
             $data = str_getcsv($l);
             if (empty(trim($data[0]))) {
                 break;
             }
-            echo($data[0]);
-            echo($data[0]);
-            $producto = Producto::crearUno($data[1], $data[2], $data[3], $data[4], $data[5]);
+            $producto = Producto::crearUno($data[1], $data[2], $data[3], $data[4]);
             if(Producto::insertarUno($producto)===false){
             	die('error');
             }
-            //$productoList[] = $product;
         }
 
         $payload = json_encode(array("mensaje" => "Archivo cargado con exito"));

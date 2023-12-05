@@ -1,10 +1,10 @@
 <?php 
 class Mesa {
 
-	CONST CERRADA = 0;
-	CONST ESPERANDOPEDIDO = 1; 
-	CONST COMIENDO = 2;
-	CONST PAGANDO = 3;
+	CONST CERRADA = 1;
+	CONST ESPERANDOPEDIDO = 2; 
+	CONST COMIENDO = 3;
+	CONST PAGANDO = 4;
 
 	function __construct($codigo, $estado)
 	{
@@ -63,7 +63,7 @@ class Mesa {
 	public static function getAll(){
 		$mesas = array();
 		$objDataAccess = AccesoDatos::obtenerInstancia();
-        $query = $objDataAccess->prepararConsulta("SELECT * FROM mesa");
+        $query = $objDataAccess->prepararConsulta("SELECT mesa.id, mesa.codigo, estado_mesa.descripcion FROM mesa JOIN estado_mesa ON mesa.estado = estado_mesa.id");
         $query->execute();
          while ($fila = $query->fetchObject()){
          	array_push($mesas, $fila);

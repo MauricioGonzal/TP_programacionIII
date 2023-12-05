@@ -176,13 +176,14 @@ class Encargo{
 
 	public static function getEnPreparacion($id_usuario){
 		$objDataAccess = AccesoDatos::obtenerInstancia();
-        $query = $objDataAccess->prepararConsulta("SELECT * FROM encargos where usuario = :usuario AND estado = :estado");
+        $query = $objDataAccess->prepararConsulta("SELECT encargos.id, productos.descripcion, usuarios.nombre, encargos.estado FROM encargos JOIN productos ON productos.id= encargos.producto JOIN usuarios ON usuarios.id = encargos.usuario where encargos.usuario = :usuario AND encargos.estado = :estado");
         $query->bindValue(':estado', SELF::ENPREPARACION);
         $query->bindValue(':usuario', $id_usuario);
         $query->execute();
         $encargos = array();
 
      	while ($fila = $query->fetchObject()){
+            $fila->estado = 'EN PREPARACION';
          	array_push($encargos, $fila);
      	}
 
@@ -203,6 +204,35 @@ class Encargo{
 
         return $encargos;
 	}
+
+    public static function getFueraDeTiempo(){
+        $objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("SELECT encargos.id, encargos.pedido, productos.descripcion, encargos.tiempo_preparacion, encargos.tiempo_realpreparacion from encargos JOIN productos ON productos.id = encargos.producto where tiempo_preparacion < tiempo_realpreparacion ");
+        $query->execute();
+        $encargos = array();
+
+        while ($fila = $query->fetchObject()){
+            array_push($encargos, $fila);
+        }
+
+        return $encargos;
+
+    }
+
+    public static function getImporteTotalByPedido($id_pedido){
+        $objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("SELECT * from encargos JOIN productos ON productos.id = encargos.producto where encargos.pedido = :pedido ");
+        $query->bindValue(':pedido', $id_pedido);
+        $query->execute();
+        $encargos = array();
+        $importe = 0;
+
+        while ($fila = $query->fetchObject()){
+            $importe += $fila->cantidad * $fila->precio;
+        }
+
+        return $importe;
+    }
 
 
 

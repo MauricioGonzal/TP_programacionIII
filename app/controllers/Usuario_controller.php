@@ -36,7 +36,52 @@ class Usuario_controller{
 			$pdf->Ln(10);
 
 		}
-		$pdf->Output('F', 'filename.pdf');
+		$pdf->Output('F', 'Logins.pdf');
+
+      	$payload = json_encode(array("mensaje" => "Pdf creado correctamente"));
+
+	 	$response->getBody()->write($payload);
+    	return $response
+      	->withHeader('Content-Type', 'application/json');
+	}
+
+	public function crear_pdf_operaciones($request, $response, $args){
+      	$logs_operaciones = Log_operacion::getAll();
+
+      	$pdf = new FPDF();
+		$pdf->AddPage();
+		$pdf->SetFont('Arial', '', 12);
+		$pdf->Cell(0, 0, 'Operaciones :', 0, 0);
+		$pdf->Ln(10);
+
+		foreach($logs_operaciones as $l){
+			$usuario = Usuario::getById($l->usuario);
+			switch ($l->accion) {
+				case '/encargo/tomarEncargo':
+					// code...
+					$pdf->Cell(0, 0, $l->fecha . ' ' . 'Encargo tomado ID: '. $l->id_encargo . ' del pedido ID: '. $l->id_pedido .'.  '. $usuario->nombre , 0, 0);
+					break;
+				case '/pedido':
+					$pdf->Cell(0, 0, $l->fecha . ' ' . 'Pedido creado. ID: '. $l->id_pedido . '.  ' .$usuario->nombre , 0, 0);
+				break;
+				case '/encargo/dejarParaServir':
+					$pdf->Cell(0, 0, $l->fecha . ' ' . 'Encargo entregado para servir ID: '. $l->id_encargo . ' del pedido ID: '. $l->id_pedido . '.  '. $usuario->nombre , 0, 0);
+				break;
+				case '/pedido/servirPedido':
+					$pdf->Cell(0, 0, $l->fecha . ' ' . 'Pedido servido. ID: '. $l->id_pedido . '.  ' . $usuario->nombre , 0, 0);					
+				break;
+				case '/pedido/cobrar':
+					$pdf->Cell(0, 0, $l->fecha . ' ' . 'Pedido cobrado. ID: '. $l->id_pedido . '.  '. $usuario->nombre , 0, 0);					
+				break;
+				default:
+					// code...
+					break;
+			}
+			
+			$pdf->Ln(10);
+
+		}
+		$pdf->Output('F', 'Operaciones.pdf');
 
       	$payload = json_encode(array("mensaje" => "Pdf creado correctamente"));
 

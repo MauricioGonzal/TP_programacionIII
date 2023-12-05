@@ -3,6 +3,7 @@ require_once './models/Pedido.php';
 require_once './models/Encargo.php';
 require_once './models/Mesa.php';
 require_once './models/AutentificadorToken.php';
+require_once './models/Log_operacion.php';
 
 class Pedido_controller{
 
@@ -47,7 +48,11 @@ class Pedido_controller{
 					Pedido::guardarImagen($id_pedido,$_FILES['imagen']['tmp_name'],$params['mesa']);
 				}
 				$payload = json_encode(array("msj"=>"Pedido creado exitosamente"));
-				Mesa::cambiarEstado($params['mesa'], 1);
+				Mesa::cambiarEstado($params['mesa'], 2);
+		        $recurso = $request->getUri();	
+		    	$recurso = substr((string)$recurso, 20);
+				$log_operacion = Log_operacion::crearUno($data->usuario, $recurso, $id_pedido, 0);
+				Log_operacion::insertarUno($log_operacion);
 			}
 		}
 
@@ -117,12 +122,20 @@ class Pedido_controller{
 
 	public function subirImagen($request, $response){
 		$params = $request->getParsedBody();
-		if(Pedido::guardarImagen($params['id_pedido'],$_FILES['imagen']['tmp_name'], $params['id_mesa'])){
-	      $payload = json_encode(array("mensaje" => "Imagen subida con exito"));
+		$pedido = Pedido::getById($params['id_pedido']);
+		if($pedido!=false){
+			if(Pedido::guardarImagen($params['id_pedido'],$_FILES['imagen']['tmp_name'], $pedido->mesa)){
+		      $payload = json_encode(array("mensaje" => "Imagen subida con exito"));
+			}
+			else{
+		      $payload = json_encode(array("mensaje" => "Error al subir la imagen"));
+			}
 		}
 		else{
-	      $payload = json_encode(array("mensaje" => "Error al subir la imagen"));
+	      $payload = json_encode(array("mensaje" => "No existe pedido con el id ingresado"));
+
 		}
+
 
 	 	$response->getBody()->write($payload);
     	return $response
@@ -172,11 +185,17 @@ class Pedido_controller{
 				$item['tiempo_demora'] = $resultado . ' minutos';
 				array_push($msj, $item);
 			}
+			else{
+				$item['id_pedido'] = $p->id;
+				$item['tiempo_demora'] = 'El pedido aun no ha sigo asignado en su totalidad.';
+				array_push($msj, $item);
+			}
+
 
 		}
 
 		if(count($msj)===0) $payload = json_encode(array("mensaje" => 'No hay pedidos asignados en tu totalidad.'));
-		else $payload = json_encode(array("mensaje" => $msj));
+		else $payload = json_encode(array("Pedidos" => $msj));
 
 	 	$response->getBody()->write($payload);
     	return $response
@@ -185,8 +204,16 @@ class Pedido_controller{
 
 	public function cobrar($request, $response, $args){
 		$params = $request->getParsedBody();
-		Mesa::cambiarEstado($params['mesa'], 3);
-		$payload = json_encode(array("mensaje"=>'Cobrando mesa'));
+		Mesa::cambiarEstado($params['mesa'], 4);
+		$importe = Encargo::getImporteTotalByPedido($params['id_pedido']);
+		$payload = json_encode(array("mensaje"=>'Cobrando mesa. Importe total: ' . $importe));
+        $recurso = $request->getUri();
+    	$recurso = substr((string)$recurso, 20);
+        $data = AutentificadorToken::obtenerData($request);
+        $recurso = $request->getUri();	
+    	$recurso = substr((string)$recurso, 20);
+		$log_operacion = Log_operacion::crearUno($data->usuario, $recurso, $params['id_pedido'], 0);
+		Log_operacion::insertarUno($log_operacion);
 
 		$response->getBody()->write($payload);
     	return $response
@@ -221,8 +248,13 @@ class Pedido_controller{
 			$payload = json_encode(array("mensaje"=>'El pedido aun no puede ser servido. Quedan encargos pendientes.'));
 		}
 		else{
-			Mesa::cambiarEstado($params['codigo_mesa'], 2);
+            $data = AutentificadorToken::obtenerData($request);
+			Mesa::cambiarEstado($params['codigo_mesa'], 3);
 			$payload = json_encode(array("mensaje"=>'Pedido servido correctamente'));
+	        $recurso = $request->getUri();	
+	    	$recurso = substr((string)$recurso, 20);
+			$log_operacion = Log_operacion::crearUno($data->usuario, $recurso, $params['pedido'], 0);
+			Log_operacion::insertarUno($log_operacion);
 		}
 
 		$response->getBody()->write($payload);

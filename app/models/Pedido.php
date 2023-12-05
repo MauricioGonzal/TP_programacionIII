@@ -26,7 +26,7 @@ class Pedido{
 
 	public static function getByPedidoYMesa($numero_pedido, $codigo_mesa){
 		$objDataAccess = AccesoDatos::obtenerInstancia();
-        $query = $objDataAccess->prepararConsulta("SELECT * FROM pedidos where mesa = :mesa AND numero = :numero");
+        $query = $objDataAccess->prepararConsulta("SELECT * FROM pedidos where mesa = :mesa AND id = :numero");
         $query->bindValue(':mesa', $codigo_mesa);
         $query->bindValue(':numero', $numero_pedido);
         $query->execute();

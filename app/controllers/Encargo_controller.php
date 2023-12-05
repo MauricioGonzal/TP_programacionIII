@@ -6,6 +6,33 @@ require_once './models/Log_operacion.php';
 
 class Encargo_controller{
 
+	public function traerUno($request, $response, $args){
+		$id = $args['id'];
+		$pedido = Encargo::getById($id);
+
+		if($pedido != null) $payload = json_encode($pedido);
+		else $payload = json_encode(array('mensaje'=>'No existe el encargo'));
+
+		$response->getBody()->write($payload);
+    	return $response
+      	->withHeader('Content-Type', 'application/json');
+	}
+
+	public function traerTodos($request, $response, $args){
+		$encargos = Encargo::getAll();
+
+		if(count($encargos)>0){
+			$payload = json_encode(array('ENCARGOS' => $encargos));
+		}
+		else{
+			$payload = json_encode(array('mensaje'=>'No hay encargos cargados'));
+		}
+
+		$response->getBody()->write($payload);
+    	return $response
+      	->withHeader('Content-Type', 'application/json');
+	}
+
 	public function tomar($request, $response, $args){
 		$params = $request->getParsedBody();
 		$dataUsuario = AutentificadorToken::obtenerData($request);
@@ -33,6 +60,11 @@ class Encargo_controller{
 		if(Encargo::sePuedeServir($dataUsuario->usuario, $params['id_encargo']) != false){
 			Encargo::dejarParaServir($params['id_encargo'], $dataUsuario->usuario, $params['tiempo_realpreparacion']);
 			$payload = json_encode(array("mensaje"=>'Cambio de estado a listo para servir.'));
+	        $recurso = $request->getUri();
+        	$recurso = substr((string)$recurso, 20);
+        	$encargo = Encargo::getById($params['id_encargo']);
+			$log_operacion = Log_operacion::crearUno($dataUsuario->usuario, $recurso, $encargo->pedido, $params['id_encargo']);
+			Log_operacion::insertarUno($log_operacion);
 		}
 		else{
 			$payload = json_encode(array("mensaje"=>'El encargo no corresponde al usuario ingresado'));
@@ -88,6 +120,22 @@ class Encargo_controller{
 			$payload = json_encode(array('msj'=>'No hay pedidos en preparacion'));
 		}
 
+		$response->getBody()->write($payload);
+    	return $response
+      	->withHeader('Content-Type', 'application/json');
+	}
+
+	public function encargosFueraDeTiempo($request, $response, $args){
+		$dataUsuario = AutentificadorToken::obtenerData($request);
+
+		$encargos = Encargo::getFueraDeTiempo();
+
+		if(count($encargos)>0) {
+			$payload = json_encode(array('Encargos entregados fuera de tiempo'=>$encargos));
+		}
+		else{
+			$payload = json_encode(array('msj'=>'No hay encargos entregados fuera de tiempo'));
+		}
 		$response->getBody()->write($payload);
     	return $response
       	->withHeader('Content-Type', 'application/json');

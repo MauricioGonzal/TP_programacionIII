@@ -1,16 +1,24 @@
 <?php 
 require_once './models/Encuesta.php';
+require_once './models/Pedido.php';
 class Encuesta_controller{
 
 	public function cargarUna($request, $response, $args){
 		$params = $request->getParsedBody();
-		$encuesta = Encuesta::crearUno($params['id_pedido'], $params['puntuacion_mesa'], $params['puntuacion_restaurante'], $params['puntuacion_mozo'], $params['puntuacion_cocinero'], $params['texto']);
+		$pedido = Pedido::getById($params['id_pedido']);
+		if($pedido != false){
+			$encuesta = Encuesta::crearUno($params['id_pedido'], $params['puntuacion_mesa'], $params['puntuacion_restaurante'], $params['puntuacion_mozo'], $params['puntuacion_cocinero'], $params['texto']);
 
-	    if (Encuesta::insertarUno($encuesta) > 0) {
-	      $payload = json_encode(array("mensaje" => "Encuesta creada con éxito"));
-	    } else {
-	      $payload = json_encode(array("mensaje" => "Error al crear la encuesta"));
-	    }
+		    if (Encuesta::insertarUno($encuesta) > 0) {
+		      $payload = json_encode(array("mensaje" => "Encuesta creada con éxito"));
+		    } else {
+		      $payload = json_encode(array("mensaje" => "Error al crear la encuesta"));
+		    }
+		}
+		else{
+	      $payload = json_encode(array("mensaje" => "No existe el pedido ingresado. Verifique los datos."));	
+		}
+		
 
 	 	$response->getBody()->write($payload);
     	return $response
@@ -88,7 +96,7 @@ class Encuesta_controller{
 		$encuestas = Encuesta::getMejores();
 
 		if(count($encuestas)>0){
-	      $payload = json_encode(array("mensaje" => $encuestas));
+	      $payload = json_encode(array("Mejores encuestas" => $encuestas));
 		}
 		else{
 	      $payload = json_encode(array("mensaje" => "No hay encuestas cargadas"));

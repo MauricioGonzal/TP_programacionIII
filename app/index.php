@@ -26,7 +26,8 @@ $dotenv->load();
 $app = AppFactory::create();
 
 $app->post('/login', \Usuario_controller::class . ':login');
-$app->get('/crear_pdf_login', \Usuario_controller::class . ':pdf');
+$app->get('/crear_pdf_login', \Usuario_controller::class . ':crear_pdf_login');
+$app->get('/crear_pdf_operaciones', \Usuario_controller::class . ':crear_pdf_operaciones');
 
 //productos
 $app->group('/producto', function (RouteCollectorProxy $group) {
@@ -83,6 +84,14 @@ $app->group('/encargo', function (RouteCollectorProxy $group) {
   	$group->get('/listarPendientes', \Encargo_controller::class . ':listarPendientes');
   	$group->get('/listarEnPreparacion', \Encargo_controller::class . ':listarEnPreparacion');
 })->add(\VerificadorAcceso::class . ':esEmpleado');
+
+//encargos-socio
+$app->group('/encargo', function (RouteCollectorProxy $group) {
+  	$group->delete('[/]', \Encargo_controller::class . ':borrarUno');
+  	$group->get('/encargosFueraDeTiempo', \Encargo_controller::class . ':encargosFueraDeTiempo');
+	$group->get('/', \Encargo_controller::class . ':TraerTodos'); 
+  	$group->get('/{id}', \Encargo_controller::class . ':TraerUno');
+})->add(\VerificadorAcceso::class . ':esSocio');
 
 //csv
 $app->group('/csv', function (RouteCollectorProxy $group) {
