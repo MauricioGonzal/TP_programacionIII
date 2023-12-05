@@ -10,6 +10,7 @@ use Slim\Factory\AppFactory;
 use Slim\Routing\RouteCollectorProxy;
 use Slim\Routing\RouteContext;
 require_once '../vendor/autoload.php';
+require_once '../vendor/setasign/fpdf/fpdf.php';
 
 require_once './controllers/Producto_controller.php';
 require_once './controllers/Usuario_controller.php';
@@ -25,6 +26,7 @@ $dotenv->load();
 $app = AppFactory::create();
 
 $app->post('/login', \Usuario_controller::class . ':login');
+$app->get('/crear_pdf_login', \Usuario_controller::class . ':pdf');
 
 //productos
 $app->group('/producto', function (RouteCollectorProxy $group) {
@@ -86,7 +88,7 @@ $app->group('/encargo', function (RouteCollectorProxy $group) {
 $app->group('/csv', function (RouteCollectorProxy $group) {
   	$group->get('/descargar', \Producto_controller::class . ':descargarDatosCsv');
   	$group->post('/cargar', \Producto_controller::class . ':cargarDatosCsv');
-})->add(\VerificadorAcceso::class . ':esSocio');
+});
 
 //encuestas
 $app->group('/encuesta', function (RouteCollectorProxy $group) {

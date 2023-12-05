@@ -82,6 +82,14 @@ class Producto
 		if($stockRestante >=0) return $stockRestante;
 		else return false;
 	}
+
+	public static function getIdByNombre($descripcion){
+		$objDataAccess = AccesoDatos::obtenerInstancia();
+        $query = $objDataAccess->prepararConsulta("SELECT id FROM productos where descripcion = :descripcion");
+        $query->bindValue(':descripcion', trim(strtolower($descripcion)));
+        $query->execute();
+        return $query->fetch(PDO::FETCH_ASSOC);
+	}
 }
 
 

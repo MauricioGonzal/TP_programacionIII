@@ -161,7 +161,7 @@ class Encargo{
 
 	public static function getPendientes($sector){
 		$objDataAccess = AccesoDatos::obtenerInstancia();
-        $query = $objDataAccess->prepararConsulta("SELECT encargos.id, encargos.producto, encargos.cantidad FROM encargos JOIN productos ON productos.id = encargos.producto where estado = :estado AND sector = :sector");
+        $query = $objDataAccess->prepararConsulta("SELECT encargos.id, productos.descripcion, encargos.cantidad FROM encargos JOIN productos ON productos.id = encargos.producto where estado = :estado AND sector = :sector");
         $query->bindValue(':estado', SELF::PENDIENTE);
         $query->bindValue(':sector', $sector);
         $query->execute();

@@ -112,6 +112,7 @@ class Pedido{
 
 	public static function guardarImagen($id_pedido, $filetmp, $id_mesa){
 			$filename = 'pedido' . $id_pedido . 'mesa' . $id_mesa . '.jpg';
+			//var_dump($filename);die();
 			if(move_uploaded_file($filetmp, 'imagenes_pedidos' .'/' . $filename)){
 				return true;
 			}

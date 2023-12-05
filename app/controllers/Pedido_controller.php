@@ -9,7 +9,7 @@ class Pedido_controller{
 	public function cargarUno($request, $response, $args){
 		$params = $request->getParsedBody();
 		$msg = '';
-		$payload ='';
+		$payload =''; 
 		if(Mesa::getByCodigo($params['mesa'])===false) $payload = json_encode(array("mensaje" => "No existe mesa con el codigo ingresado"));
 		else{
 	        $header = $request->getHeaderLine('Authorization');
@@ -23,12 +23,13 @@ class Pedido_controller{
 			
 			for ($i=0; $i < count($productos); $i++) { 
 				// code...
-				$stockRestante =  Producto::hayStock($productos[$i], $cantidades[$i]);
+				$id_producto = Producto::getIdByNombre($productos[$i]);
+				$stockRestante =  Producto::hayStock($id_producto['id'], $cantidades[$i]);
 				if($stockRestante!=false){
-					$producto = Producto::getById($productos[$i]);
+					$producto = Producto::getById($id_producto['id']);
 					$producto->stock = $stockRestante;
 					Producto::modificar($producto);
-					$encargo = Encargo::crearUno($id_pedido,$productos[$i],$cantidades[$i], 0, 0);
+					$encargo = Encargo::crearUno($id_pedido,$id_producto['id'],$cantidades[$i], 0, 0);
 					$id_encargo = Encargo::insertarUno($encargo);
 					if($id_encargo === false){
   				      	$payload = json_encode(array("mensaje" => "Error al crear el pedido"));
@@ -36,11 +37,9 @@ class Pedido_controller{
 			    	}	
 				}
 				else{
-					$payload = json_encode(array("No hay stock del producto con ID: " . $productos[$i] . '. '));
+					$payload = json_encode(array("No hay stock del producto con ID: " . $id_producto['id'] . '. '));
 					break;
 				}
-				
-				
 		
 			}
 			if($payload == ''){

@@ -20,6 +20,31 @@ class Usuario_controller{
       	->withHeader('Content-Type', 'application/json');
 	}
 
+	public function crear_pdf_login($request, $response, $args){
+      	$logs = Log::getAll();
+
+      	$pdf = new FPDF();
+		$pdf->AddPage();
+		$pdf->SetFont('Arial', '', 12);
+		$pdf->Cell(0, 0, 'INGRESOS AL SISTEMA :', 0, 0);
+		$pdf->Ln(10);
+
+		foreach($logs as $l){
+			$usuario = Usuario::getById($l->usuario);
+			$pdf->Cell(0, 0, $l->fecha . ' ' . $usuario->nombre, 0, 0);
+			
+			$pdf->Ln(10);
+
+		}
+		$pdf->Output('F', 'filename.pdf');
+
+      	$payload = json_encode(array("mensaje" => "Pdf creado correctamente"));
+
+	 	$response->getBody()->write($payload);
+    	return $response
+      	->withHeader('Content-Type', 'application/json');
+	}
+
 	public function modificarUno($request, $response, $args){
 		$params = json_decode(file_get_contents('php://input'), true);
 		$usuario = Usuario::getById($params['id']);
@@ -100,7 +125,7 @@ class Usuario_controller{
     		if($usuario != false && password_verify($parametros['password'], $usuario->password)){
             	$token = AutentificadorToken::crearToken(array('usuario'=>$usuario->id, 'password'=>$parametros['password'],'sector'=>$sector->id, 'documento'=>$usuario->documento));
             	$payload = json_encode(array('mensaje'=>'Inicio de sesion exitoso', 'token'=>json_encode($token)));
-        		$log = Log::crearUno($parametros['user'], date('d-m-Y h:i:s', time()));
+        		$log = Log::crearUno($usuario->id, date('d-m-Y h:i:s', time()));
         		Log::insertarUno($log);
         	}
         	else $payload = json_encode(array("No existe usuario con los datos ingresados"));

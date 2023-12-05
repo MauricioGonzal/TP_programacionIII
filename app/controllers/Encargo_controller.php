@@ -2,6 +2,7 @@
 require_once './models/Encargo.php';
 require_once './models/Mesa.php';
 require_once './models/AutentificadorToken.php';
+require_once './models/Log_operacion.php';
 
 class Encargo_controller{
 
@@ -11,6 +12,11 @@ class Encargo_controller{
 		if(Encargo::sePuedeTomar($dataUsuario->usuario, $params['id_encargo']) != false){
 			Encargo::tomarEncargo($params['id_encargo'], $dataUsuario->usuario, $params['tiempo_preparacion']);
 			$payload = json_encode(array("mensaje"=>'Encargo asignado correctamente'));
+	        $recurso = $request->getUri();
+        	$recurso = substr((string)$recurso, 20);
+        	$encargo = Encargo::getById($params['id_encargo']);
+			$log_operacion = Log_operacion::crearUno($dataUsuario->usuario, $recurso, $encargo->pedido, $params['id_encargo']);
+			Log_operacion::insertarUno($log_operacion);
 		}
 		else{
 			$payload = json_encode(array("mensaje"=>'El encargo ingresado no puede ser asignado. Verifique los datos.'));
